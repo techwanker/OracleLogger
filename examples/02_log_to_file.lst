@@ -1,0 +1,10 @@
+SQL> 
+SQL> begin
+  2  	logger.begin_log(logfile_directory => 'TMP_DIR', logfile_name => '02_log_to_file.log');
+  3  	logger.log('a message');
+  4  end;
+  5  /
+
+PL/SQL procedure successfully completed.
+
+SQL> exit

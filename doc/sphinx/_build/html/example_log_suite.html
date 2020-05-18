@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Define some procedures &#8212; Logger for PL/SQL 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Logger package" href="logger.pks.sr.html" />
+    <link rel="prev" title="Filtering" href="filter.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <p>set serveroutput on set echo on spool example_log_suite.lst</p>
+<div class="section" id="define-some-procedures">
+<h1>Define some procedures<a class="headerlink" href="#define-some-procedures" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">### example_04</span>
+</pre></div>
+</div>
+<p>create or replace procedure example_04 is token varchar(32); begin
+logger.log(‘severe 1’,1); logger.log(‘warning 2’,2);
+logger.log(‘undefined 3’,3); logger.log(‘info 4’,4); logger.log(‘verbose
+6’,6); logger.log(‘debug 7’,7); logger.log(‘trace 8’,8); end;</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span>
+
+<span class="c1">### example_05</span>
+</pre></div>
+</div>
+<p>create or replace procedure example_05 is begin for lvl in 1 .. 9 loop
+logger.log(‘lvl is ‘ || lvl,lvl); end loop; logger.end_job; end;</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span>
+
+<span class="n">begin</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">set_debug</span><span class="p">;</span>
+  <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;no logfile specified&#39;</span><span class="p">);</span>
+<span class="n">end</span><span class="p">;</span>
+<span class="o">/</span>
+
+<span class="c1"># Example usage</span>
+
+
+<span class="o">*</span> <span class="n">begin_log</span> <span class="p">(</span><span class="n">logfile_name</span><span class="p">,</span> <span class="n">p_log_level</span><span class="p">)</span>
+
+  <span class="n">A</span> <span class="n">logfile</span> <span class="n">will</span> <span class="n">be</span> <span class="n">created</span> <span class="ow">in</span> <span class="n">the</span> <span class="o">*</span><span class="n">job_msg_dir</span><span class="o">*</span> <span class="n">directory</span> <span class="ow">and</span>
+  <span class="n">unless</span> <span class="n">other</span> <span class="n">filters</span> <span class="n">are</span> <span class="n">applied</span> <span class="n">messages</span> <span class="n">of</span> <span class="n">level</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">lower</span>
+  <span class="n">will</span> <span class="n">be</span> <span class="n">written</span>
+
+<span class="o">*</span> <span class="n">set_caller_level</span><span class="p">(</span><span class="n">unit_name</span><span class="p">,</span><span class="n">level</span><span class="p">)</span>
+
+  <span class="n">All</span> <span class="n">messages</span> <span class="k">for</span> <span class="n">procedure</span> <span class="o">*</span><span class="n">example_05</span><span class="o">*</span> <span class="n">of</span> <span class="k">with</span> <span class="n">a</span> <span class="n">level</span> <span class="n">of</span> <span class="mi">8</span>
+  <span class="ow">or</span> <span class="n">less</span> <span class="n">will</span> <span class="n">be</span> <span class="n">written</span>
+</pre></div>
+</div>
+<p>declare token varchar(32); logname varchar(32) :=
+to_char(job_log_id_seq.nextval) || ‘.log’; begin
+logger.set_debug; logger.begin_log(logfile_name =&gt; logname,
+p_log_level =&gt; 3); logger.set_caller_level(‘example_05’,8);
+example_04; example_05; end;</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span>
+<span class="n">exit</span><span class="p">;</span>
+
+<span class="c1">## The output</span>
+</pre></div>
+</div>
+<p>1,”2020-05-15T18:23:57.422520000”,”severe”,”EXAMPLE_01”,4,,,””
+2,”2020-05-15T18:23:57.427165000”,”warning”,”EXAMPLE_01”,5,,,””
+3,”2020-05-15T18:23:57.429084000”,”undefined”,”EXAMPLE_01”,6,,,””
+1,”2020-05-15T18:23:57.439742000”,”lvl is 1”,”EXAMPLE_04”,8,,,””
+2,”2020-05-15T18:23:57.441323000”,”lvl is 2”,”EXAMPLE_04”,8,,,””
+3,”2020-05-15T18:23:57.442867000”,”lvl is 3”,”EXAMPLE_04”,8,,,””
+1,”2020-05-15T18:23:57.453696000”,”lvl is 1”,”EXAMPLE_05”,7,,,””
+2,”2020-05-15T18:23:57.455170000”,”lvl is 2”,”EXAMPLE_05”,7,,,””
+3,”2020-05-15T18:23:57.456750000”,”lvl is 3”,”EXAMPLE_05”,7,,,”” ```</p>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Logger for PL/SQL</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="filter.html">Filtering</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Define some procedures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logger.pks.sr.html">Logger package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logger.pks.sr.html#logging">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logger.pks.sr.html#job">job</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logger.pks.sr.html#todo">TODO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logger.pks.sr.html#sql-trace">sql trace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logger.pks.sr.html#misc">misc</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="filter.html" title="previous chapter">Filtering</a></li>
+      <li>Next: <a href="logger.pks.sr.html" title="next chapter">Logger package</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Jim Schmidt.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/example_log_suite.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

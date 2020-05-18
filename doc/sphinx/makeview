@@ -1,0 +1,4 @@
+unset LD_LIBRARY_PATH
+make html
+sleep 3
+firefox _build/html/index.html

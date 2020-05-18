@@ -1,0 +1,21 @@
+<p>create or replace function read_trace_file(p_file_name in varchar) return clob is my_udump_dir_name varchar(4096); my_udump_directory_path varchar(4096); my_file_name varchar(4096); incorrect_udump_directory exception;<br /> begin dbms_output.put_line('Diag Trace'); select value into my_udump_dir_name from v$diag_info where name = 'Diag Trace';</p>
+<pre><code>   dbms_output.put_line(&#39;UDUMP_DIR&#39;);
+   select directory_path into my_udump_directory_path 
+   from all_directories where directory_name = &#39;UDUMP_DIR&#39;;
+
+   dbms_output.put_line(&#39;Validating&#39;);
+   if my_udump_directory_path is null then
+       dbms_output.put_line (&#39;no UDUMP_DIR directory available to this user&#39;);
+       raise incorrect_udump_directory;
+   end if ;
+
+   if  my_udump_directory_path != my_udump_dir_name then
+       dbms_output.put_line (&#39;trace_files_are in &#39; || my_udump_dir_name || 
+          &#39;but directory UDUMP_DIR is &quot;&#39; || my_udump_directory_path || &#39;&quot;&#39;);
+       raise incorrect_udump_directory;
+   end if;
+   dbms_output.put_line(&#39;returning&#39;);
+   return read_file(&#39;UDUMP_DIR&#39;,p_file_name);</code></pre>
+<p>end read_trace_file; / show errors;</p>
+<p>set serveroutput on</p>
+<p>declare file_text clob; my_clob_length pls_integer; begin file_text := read_trace_file('dev18b_ora_26830_job_1.trc'); if (file_text is null) then dbms_output.put_line('file_text is null'); end if; my_clob_length := length(file_text); dbms_output.put_line('length of file is ' || to_char(my_clob_length)); --dbms_output.put_line(file_text); end; /</p>

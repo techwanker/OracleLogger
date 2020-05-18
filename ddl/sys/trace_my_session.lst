@@ -1,0 +1,89 @@
+SQL> set serveroutput on
+SQL> 
+SQL> alter session set container = sales_reporting;
+
+Session altered.
+
+SQL> 
+SQL> create role trace_my_session_role;
+create role trace_my_session_role
+            *
+ERROR at line 1:
+ORA-01921: role name 'TRACE_MY_SESSION_ROLE' conflicts with another user or 
+role name 
+
+
+SQL> grant  trace_my_session_role to public;
+
+Grant succeeded.
+
+SQL> 
+SQL> select * from dba_role_privs
+  2  where granted_role = 'TRACE_MY_SESSION';
+
+no rows selected
+
+SQL> 
+SQL> create or replace procedure trace_my_session_jdbc(p_bind in pls_integer default 1, p_wait in pls_integer default 1) is
+  2  	 my_sid varchar(9);
+  3  	 my_serial# varchar(9);
+  4  	 my_binds boolean;
+  5  	 my_waits boolean;
+  6  begin
+  7  	 if (p_bind = 0) then my_binds := false; else my_binds	:= true; end if;
+  8  	 if (p_wait = 0) then my_waits := false; else my_waits	:= true; end if;
+  9  
+ 10  	 select to_char(sid), to_char(serial#)
+ 11  	 into my_sid, my_serial#
+ 12  	 from  sys.v_$session s
+ 13  	 where s.audsid = userenv('sessionid');
+ 14  
+ 15  	 dbms_output.put_line('sid ' || my_sid || ' serial# ' ||  my_serial#);
+ 16  	 dbms_monitor.session_trace_enable (my_sid,my_serial#,binds=>my_binds,waits=>my_waits);
+ 17  end;
+ 18  /
+
+Procedure created.
+
+SQL> show errors
+No errors.
+SQL> 
+SQL> grant execute on trace_my_session_jdbc to public;
+
+Grant succeeded.
+
+SQL> grant execute on trace_my_session to public;
+
+Grant succeeded.
+
+SQL> 
+SQL> drop public synonym trace_my_session  sys.trace_my_session;
+drop public synonym trace_my_session  sys.trace_my_session
+                                      *
+ERROR at line 1:
+ORA-00933: SQL command not properly ended 
+
+
+SQL> 
+SQL> select owner, object_type
+  2  from dba_objects
+  3  where object_name = 'TRACE_MY_SESSION';
+
+OWNER                                                                           
+--------------------------------------------------------------------------------
+OBJECT_TYPE                                                                     
+-----------------------                                                         
+SYS                                                                             
+PROCEDURE                                                                       
+                                                                                
+PUBLIC                                                                          
+SYNONYM                                                                         
+                                                                                
+
+SQL> 
+SQL> exec trace_my_session_jdbc(p_bind => 1, p_wait => 1);
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> exit

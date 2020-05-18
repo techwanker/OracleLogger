@@ -1,0 +1,32 @@
+<pre><code>set echo on
+create or replace function read_file(p_dir_name in varchar, p_file_name in varchar) 
+return clob is  
+    my_clob         clob;
+    my_bfile        bfile;
+    my_dest_offset  integer := 1;
+    my_src_offset   integer := 1;
+    my_lang_context integer := dbms_lob.default_lang_ctx;
+    my_warning      integer;
+begin
+    dbms_output.put_line(&#39;reading &#39; || p_dir_name || &#39; &#39; || p_file_name);
+    my_bfile := bfilename(p_dir_name, p_file_name);
+
+    dbms_lob.CreateTemporary(my_clob, FALSE, dbms_lob.CALL);
+    dbms_lob.FileOpen(my_bfile);
+    dbms_output.put_line(&#39;get_tracefile: before LoadClobFromFile&#39;);
+
+    dbms_lob.LoadClobFromFile (
+            dest_lob     =&gt; my_clob,
+            src_bfile    =&gt; my_bfile,
+            amount       =&gt; dbms_lob.lobmaxsize,
+            dest_offset  =&gt; my_dest_offset,
+            src_offset   =&gt; my_src_offset,
+            bfile_csid   =&gt; dbms_lob.default_csid,
+            lang_context =&gt; my_lang_context,
+            warning      =&gt; my_warning
+    );
+    dbms_output.put_line(&#39;get_tracefile warning: &#39; || my_warning);
+    dbms_lob.FileClose(my_bfile);
+    dbms_output.put_line(&#39;returning file&#39;);
+    return my_clob;</code></pre>
+<p>end read_file ; / show errors;</p>

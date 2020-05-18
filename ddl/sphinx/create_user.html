@@ -1,0 +1,38 @@
+<pre><code>set echo on
+@defines
+
+alter session set container = &amp;&amp;container;
+
+select tablespace_name from dba_tablespaces;
+
+grant connect to  &amp;&amp;username identified  by tutorial;
+--grant connect to  &amp;&amp;username identified  by tutorial container=all;
+grant create session to &amp;&amp;username;
+grant create table to &amp;&amp;username;
+grant create procedure to &amp;&amp;username;
+grant create type to &amp;&amp;username;
+grant create view to &amp;&amp;username;
+-- grant create directory to &amp;username;
+grant create sequence to &amp;&amp;username;
+
+alter user &amp;&amp;username default tablespace &amp;&amp;tablespace_name;
+alter user &amp;&amp;username quota unlimited on &amp;&amp;tablespace_name;
+-- 
+grant execute on sys.utl_file to &amp;&amp;username with grant option;
+grant execute on sys.dbms_pipe to &amp;&amp;username with grant option;
+--#grant select on sys.v_$session to &amp;username with grant option;
+--#grant select on sys.v_$mystat to &amp;username with grant option;
+--#grant select on sys.v_$sesstat  to &amp;username with grant option;
+--#grant execute on sys.dbms_lock to &amp;username with grant option;
+--#grant execute on sys.utl_http to &amp;username with grant option;
+
+drop directory udump_dir;
+create directory udump_dir as &#39;&amp;&amp;udump_directory&#39;;
+create public synonym udump_dir for udump_dir;
+grant read on directory udump_dir to &amp;username;
+
+drop directory job_msg_dir;
+create directory job_msg_dir as &#39;&amp;&amp;job_msg_directory&#39;;
+grant read, write on directory job_msg_dir to &amp;username;
+drop public synonym job_msg_dir;
+create public synonym job_msg_dir for job_msg_dir;</code></pre>

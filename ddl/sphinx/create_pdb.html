@@ -1,0 +1,39 @@
+<pre><code>spool create_db 
+@ defines   
+set echo on
+
+# drop container  
+alter pluggable database &amp;&amp;container close immediate;
+drop pluggable database &amp;&amp;container including datafiles;
+
+# create container 
+CREATE PLUGGABLE DATABASE &amp;&amp;container 
+  ADMIN USER &amp;&amp;username IDENTIFIED BY &amp;&amp;password
+  STORAGE (MAXSIZE 8G)
+  DEFAULT TABLESPACE &amp;&amp;tablespace_name
+    DATAFILE &#39;&amp;&amp;pdb_datafile&#39;
+       SIZE 512m  AUTOEXTEND ON
+  FILE_NAME_CONVERT = (&#39;/pdbseed/&#39;, &#39;/&amp;&amp;container/&#39;);
+
+alter pluggable database &amp;&amp;container open;
+alter pluggable database &amp;&amp;container save state;
+
+create tablespace &amp;&amp;tablespace_name datafile &#39;&amp;&amp;tablespace_datafile&#39; size &amp;&amp;datafile_size;
+
+alter session set container = &amp;&amp;container;
+# Validate
+select tablespace_name from dba_tablespaces;
+
+SELECT tablespace_name
+FROM   dba_tablespaces
+ORDER BY tablespace_name;
+
+SELECT property_value
+FROM   database_properties
+WHERE  property_name = &#39;DEFAULT_PERMANENT_TABLESPACE&#39;;
+
+SELECT property_value
+FROM   database_properties
+WHERE  property_name = &#39;DEFAULT_PERMANENT_TABLESPACE&#39;; 
+
+create directory scratch as &#39;&amp;&amp;scratch_directory&#39;;</code></pre>

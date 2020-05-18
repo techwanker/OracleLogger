@@ -1,0 +1,8 @@
+<p>set echo on</p>
+<p>drop procedure trace_my_session;</p>
+<p>select * from user_role_privs where granted_role = 'TRACE_MY_SESSION'</p>
+<p>select owner, object_name, object_type<br />from all_objects where object_name = 'TRACE_MY_SESSION';</p>
+<p>drop procedure trace_my_session;</p>
+<p>exec sys.trace_my_session(p_bind =&gt; true, p_wait =&gt; true);</p>
+<p>select 'Ticket:' from dual;</p>
+<p>select * from sys.v_$diag_sess_opt_trace_records;</p>

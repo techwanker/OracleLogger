@@ -1,0 +1,14 @@
+::
+
+    define username=            'sr'
+    define password=            'tutorial'
+    define scratch_directory=   '/tmp'
+    define udump_directory=     '/opt/oracle/diag/rdbms/orclcdb/ORCLCDB/trace'
+    define job_msg_directory=   '/tmp'
+    define container=           'sales_reporting'
+    --define tablespace='sales_reporting'
+    define tablespace_name=     'sales_reporting'
+    define pdb_datafile=        '/opt/oracle/oradata/ORCLCDB/sales_reporting/sales_reporting_pdb.dbf' 
+    define tablespace_datafile= '/opt/oracle/oradata/ORCLCDB/sales_reporting/sales_reporting.dbf' 
+    define datafile_size=       '512m'
+
