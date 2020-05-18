@@ -1,11 +1,12 @@
+--%```
 set serveroutput on
 set echo on
 spool example_log_suite.lst
-
---%## Define some procedures
 --%```
 
---%### example_04
+--%# Logging example
+
+--%## example_04
 --%```
 create or replace 
 procedure example_04
@@ -23,7 +24,7 @@ end;
 --%```
 /
 
---%### example_05
+--%## example_05
 --%```
 create or replace 
 procedure example_05
@@ -38,13 +39,15 @@ end;
 --%```
 /
 
+--%```
 begin
   logger.set_debug;
   logger.log('no logfile specified');
 end;
+--%```
 /
 
---%# Example usage
+--%## Example usage
 --%
 --%
 --%* begin_log (logfile_name, p_log_level)
@@ -70,7 +73,6 @@ begin
 end;
 --%```
 /
-exit;
 
 ## The output
 --%```
