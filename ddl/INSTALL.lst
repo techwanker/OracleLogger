@@ -317,6 +317,7 @@ SQL> create or replace view logger_hdr_dtl as
 View created.
 
 SQL> @ logger.pks.sr.sql
+SQL> --%# Logger package
 SQL> set echo on
 SQL> 
 SQL> --%```
@@ -331,162 +332,171 @@ SQL> create or replace PACKAGE logger AS
   9  	 G_FINER	CONSTANT PLS_INTEGER := 8 ;
  10  	 G_FINEST	CONSTANT PLS_INTEGER := 9 ;
  11  	 G_NONE 	CONSTANT PLS_INTEGER := 10 ;
- 12  --%```
- 13  
- 14  
- 15  --%```
- 16  	 function format_timestamp(p_timestamp in timestamp)
- 17  	 return varchar;
- 18  --%```
- 19  
- 20  --%```
- 21  	 function get_new_job_log_id
- 22  	 return number;
- 23  --%```
- 24  
- 25  --%# Logging
- 26  
- 27  --%## Specify log destination
+ 12  
+ 13  	 SEVERE       CONSTANT PLS_INTEGER := 1 ;
+ 14  	 WARNING      CONSTANT PLS_INTEGER := 2 ;
+ 15  	 INFO	      CONSTANT PLS_INTEGER := 4 ;
+ 16  	 VERBOSE      CONSTANT PLS_INTEGER := 5 ;
+ 17  	 VERY_VERBOSE CONSTANT PLS_INTEGER := 6 ;
+ 18  	 DEBUG	      CONSTANT PLS_INTEGER := 7 ;
+ 19  	 TRACE	      CONSTANT PLS_INTEGER := 9 ;
+ 20  	 NONE	      CONSTANT PLS_INTEGER := 10 ;
+ 21  --%```
+ 22  
+ 23  
+ 24  --%```
+ 25  	 function format_timestamp(timestamp in timestamp)
+ 26  	 return varchar;
+ 27  --%```
  28  
  29  --%```
- 30  	 procedure begin_log (
- 31  	     logfile_name   in varchar,
- 32  	     logfile_directory in varchar default 'JOB_MSG_DIR',
- 33  	     p_process_name in varchar default null,
- 34  	     p_log_set	    in varchar default null,
- 35  	     p_classname    in varchar default null,
- 36  	     p_module_name  in varchar default null,
- 37  	     p_status_msg   in varchar default null,
- 38  	     p_thread_name  in varchar default null,
- 39  	     p_log_level    in pls_integer default G_INFO,
- 40  	     p_trace_level  in pls_integer default G_INFO);
- 41  --%```
- 42  
- 43  --%## Filter
- 44  --%```
- 45  	 procedure set_caller_level(name in varchar ,
- 46  				   level in pls_integer);
- 47  --%```
- 48  --%## Log
- 49  --%```
- 50  	 procedure log (
- 51  	   p_log_msg	  in   varchar,
- 52  	   p_log_level	  in   pls_integer default g_info,
- 53  	   p_dump_stack   in   boolean default false
- 54  	);
- 55  --%```
- 56  
- 57  --%#  job
- 58  
- 59  --%## begin_job
- 60  
- 61  
- 62  --%```
- 63  	FUNCTION begin_job (
- 64  	     p_process_name in varchar,
- 65  	     p_log_set	    in varchar default null,
- 66  	     p_classname    in varchar default null,
- 67  	     p_module_name  in varchar default null,
- 68  	     p_status_msg   in varchar default null,
- 69  	     p_thread_name  in varchar default null,
- 70  	     logfile_name   in varchar default null,
- 71  	     logfile_directory in varchar default 'JOB_MSG_DIR',
- 72  	     p_log_level    in pls_integer default G_INFO,
- 73  	     p_trace_level  in pls_integer default G_INFO)
- 74  	     return varchar;
- 75  --%```
- 76  
- 77  --%## start step
- 78  
- 79  --%```
- 80  	function job_step_insert (
- 81  	     p_step_name   in varchar,
- 82  	     p_step_info   in varchar default null,
- 83  	     p_classname   in varchar default null,
- 84  	     p_stacktrace  in varchar default null
- 85  	) return number;
- 86  --%```
+ 30  	 function get_new_job_log_id
+ 31  	 return number;
+ 32  --%```
+ 33  
+ 34  --%# Logging
+ 35  
+ 36  --%## Specify log destination
+ 37  
+ 38  --%```
+ 39  	 procedure begin_log (
+ 40  	     logfile_name   in varchar,
+ 41  	     logfile_directory in varchar default 'JOB_MSG_DIR',
+ 42  	     process_name in varchar default null,
+ 43  	     log_set	  in varchar default null,
+ 44  	     classname	  in varchar default null,
+ 45  	     module_name  in varchar default null,
+ 46  	     status_msg   in varchar default null,
+ 47  	     thread_name  in varchar default null,
+ 48  	     log_level	  in pls_integer default G_INFO,
+ 49  	     trace_level  in pls_integer default G_INFO);
+ 50  --%```
+ 51  
+ 52  --%## Filter
+ 53  --%```
+ 54  	 procedure set_caller_level(name in varchar ,
+ 55  				   level in pls_integer);
+ 56  --%```
+ 57  --%## Log
+ 58  --%```
+ 59  	 procedure log (
+ 60  	   log_msg     in   varchar,
+ 61  	   log_level	in   pls_integer default g_info,
+ 62  	   dumstack   in   boolean default false
+ 63  	);
+ 64  --%```
+ 65  
+ 66  --%#  job
+ 67  
+ 68  --%## begin_job
+ 69  
+ 70  
+ 71  --%```
+ 72  	FUNCTION begin_job (
+ 73  	     process_name in varchar,
+ 74  	     log_set	  in varchar default null,
+ 75  	     classname	  in varchar default null,
+ 76  	     module_name  in varchar default null,
+ 77  	     status_msg   in varchar default null,
+ 78  	     thread_name  in varchar default null,
+ 79  	     logfile_name   in varchar default null,
+ 80  	     logfile_directory in varchar default 'JOB_MSG_DIR',
+ 81  	     log_level	  in pls_integer default G_INFO,
+ 82  	     trace_level  in pls_integer default G_INFO)
+ 83  	     return varchar;
+ 84  --%```
+ 85  
+ 86  --%## start step
  87  
- 88  --%## finish step
- 89  
- 90  --%```
- 91  	procedure job_step_finish (step_id in number);
- 92  --%```
- 93  --%## Finish job
- 94  --%```
- 95  	 procedure end_job;
- 96  --%```
- 97  
- 98  --%## Abort job
+ 88  --%```
+ 89  	function job_step_insert (
+ 90  	     step_name	 in varchar,
+ 91  	     step_info	 in varchar default null,
+ 92  	     classname	 in varchar default null,
+ 93  	     stacktrace  in varchar default null
+ 94  	) return number;
+ 95  --%```
+ 96  
+ 97  --%## finish step
+ 98  
  99  --%```
-100  	 procedure abort_job(exception_msg in varchar default null,
-101  		     stacktrace in varchar default null);
-102  --%```
-103  
-104  
-105  
-106  --%# TODO
-107  --%```
-108  	 procedure set_action (p_action in	  varchar) ;
-109  --%```
-110  
+100  	procedure job_step_finish (step_id in number);
+101  --%```
+102  --%## Finish job
+103  --%```
+104  	 procedure end_job;
+105  --%```
+106  
+107  --%## Abort job
+108  --%```
+109  	 procedure abort_job(exception_msg in varchar default null,
+110  		     stacktrace in varchar default null);
 111  --%```
-112  	 procedure set_module (
-113  	     p_module_name in	     varchar,
-114  	     p_action_name in	varchar
-115  	 );
+112  
+113  
+114  
+115  --%# TODO
 116  --%```
-117  
-118  --%# sql trace
-119  --%```
-120  	 function get_tracefile(p_file_name in varchar)
-121  	 return clob;
-122  --%```
-123  
-124  --%```
-125  	 function get_my_tracefile_name
-126  	 return varchar;
-127  --%```
-128  
-129  --%```
-130  	 function set_tracefile_identifier(p_job_nbr in number)
-131  	 return varchar;
-132  --%```
-133  
-134  --%```
-135  	 function get_my_tracefile
-136  	 return clob ;
-137  --%```
-138  
-139  
-140  --%# misc
+117  	 procedure set_action (action in	varchar) ;
+118  --%```
+119  
+120  --%```
+121  	 procedure set_module (
+122  	     module_name in	   varchar,
+123  	     action_name in   varchar
+124  	 );
+125  --%```
+126  
+127  --%# sql trace
+128  --%```
+129  	 function get_tracefile(file_name in varchar)
+130  	 return clob;
+131  --%```
+132  
+133  --%```
+134  	 function get_my_tracefile_name
+135  	 return varchar;
+136  --%```
+137  
+138  --%```
+139  	 function set_tracefile_identifier(job_nbr in number)
+140  	 return varchar;
 141  --%```
-142  	 function basename (p_full_path in varchar,
-143  			    p_suffix	in varchar default null,
-144  			    p_separator in char default '/')
-145  	 return varchar;
+142  
+143  --%```
+144  	 function get_my_tracefile
+145  	 return clob ;
 146  --%```
 147  
-148  --%```
-149  	 procedure prepare_connection;
+148  
+149  --%# misc
 150  --%```
-151  
-152  --%```
-153  	 procedure trace_step(p_step_name in varchar, p_job_step_id in number);
-154  --%```
-155  
+151  	 function basename (full_path in varchar,
+152  			    suffix    in varchar default null,
+153  			    separator in char default '/')
+154  	 return varchar;
+155  --%```
 156  
 157  --%```
-158  	 function get_directory_path
-159  	 return varchar;
-160  --%```
-161  
-162  --%```
-163  	 procedure set_debug(debug boolean default true) ;
-164  --%```
+158  	 procedure prepare_connection;
+159  --%```
+160  
+161  --%```
+162  	 procedure trace_step(step_name in varchar, job_step_id in number);
+163  --%```
+164  
 165  
-166  END logger;
-167  /
+166  --%```
+167  	 function get_directory_path
+168  	 return varchar;
+169  --%```
+170  
+171  --%```
+172  	 procedure set_debug(debug boolean default true) ;
+173  --%```
+174  
+175  END logger;
+176  /
 
 Package created.
 
@@ -495,700 +505,4 @@ No errors.
 SQL> @ logger.pkb.sr.sql
 SQL> --#<
 SQL> set echo on
-SQL> --spool pllog.pkb.lst
-SQL> --#>
-SQL> CREATE OR REPLACE PACKAGE BODY logger
-  2  is
-  3  	 g_debug		 boolean := false;
-  4  	 g_job_msg_dir		 varchar (32) := 'JOB_MSG_DIR';
-  5  	 g_logfile_name 	 varchar(255);
-  6  
-  7  
-  8  	type logger_dtl_type is table of logger_dtl%rowtype index by varchar(64);
-  9  
- 10  	 logger_dtls logger_dtl_type;
- 11  
- 12  	 g_job_log job_log%rowtype;
- 13  
- 14  	 function format_timestamp(p_timestamp in timestamp)
- 15  	 return varchar
- 16  	 is
- 17  	     my_timestamp varchar(256) :=  to_char (current_timestamp, 'YYYY-MM-DD HH24:MI:SSXFF');
- 18  	 begin
- 19  	     my_timestamp := replace(my_timestamp,' ','T');
- 20  	     return my_timestamp;
- 21  	 end format_timestamp;
- 22  
- 23  	function  logger_message_formatter  (
- 24  	   job_log_id	 in   pls_integer,
- 25  	   job_msg_id	 in   pls_integer,
- 26  	   log_msg	 in   varchar,
- 27  	   log_level	 in   pls_integer,
- 28  	   caller_name	 in   varchar default null,
- 29  	   line_number	 in   pls_integer default null,
- 30  	   call_stack	 in   boolean default false,
- 31  	   separator	 in   varchar default ','
- 32  	) return varchar
- 33  	is
- 34  	    my_log_msg	varchar2(32767) := REPLACE (log_msg, '"', '""');
- 35  	    my_log_entry varchar2(32767);
- 36  	    my_timestamp varchar(256);
- 37  	    stack varchar(32767);
- 38  	    -- my_text_field_end_separator varchar)  := '",';
- 39  	begin
- 40  	   my_timestamp := format_timestamp(current_timestamp);
- 41  
- 42  	   if call_stack then
- 43  	       stack := dbms_utility.format_call_stack;
- 44  	   end if;
- 45  	   --	   dbms_output.put_line('my_timestamp '||  my_timestamp);
- 46  	   my_log_entry :=
- 47  		log_level    || separator ||
- 48  		'"' ||my_timestamp  || '"' || separator ||
- 49  		'"' || my_log_msg   || '"' || separator ||
- 50  		'"' || caller_name  || '"' || separator ||
- 51  		line_number  || separator  ||
- 52  		job_log_id   || separator ||
- 53  		job_msg_id   || separator ||
- 54  		'"' || stack || '"';
- 55  	      -- dbms_output.put_line('log entry: ' || my_log_entry);
- 56  	      return my_log_entry;
- 57  	 end;
- 58  
- 59  	 function get_job_token
- 60  	 return varchar
- 61  	 is begin
- 62  	     return format_timestamp(current_timestamp);
- 63  	 end;
- 64  
- 65  	 function get_new_job_log_id
- 66  	 return number
- 67  	 is begin
- 68  	     return job_log_id_seq.nextval;
- 69  	 end;
- 70  
- 71  	 --%#Tracing
- 72  	 --%<
- 73  	 procedure set_trace (p_trace_level in pls_integer)
- 74  	 --%>
- 75  	 is
- 76  	 begin
- 77  	    DBMS_TRACE.set_plsql_trace (p_trace_level);
- 78  	 end set_trace;
- 79  
- 80  	 --%<
- 81  	 function get_my_tracefile_name
- 82  	 return varchar
- 83  	 --%>
- 84  	 is
- 85  	      tracefile_name varchar(4096);
- 86  	 begin
- 87  	     select value into tracefile_name
- 88  	     from v$diag_info
- 89  	     where name = 'Default Trace File';
- 90  
- 91  	     return tracefile_name;
- 92  	 end get_my_tracefile_name;
- 93  
- 94  	 --%<
- 95  	 function set_tracefile_identifier(p_job_nbr in number)
- 96  	 return varchar
- 97  	 --%>
- 98  	 is
- 99  	    identifier varchar(32) := 'job_' || to_char(p_job_nbr);
-100  	 begin
-101  	     execute immediate 'alter session set tracefile_identifier = ''' || identifier || '''';
-102  	     return get_my_tracefile_name;
-103  	 end set_tracefile_identifier;
-104  
-105  	 --%# Job DML
-106  	 --%# job_msg
-107  
-108  	 procedure job_msg_insert (
-109  		    p_job_log_id in pls_integer,
-110  	 --	      g_next_log_seq_nbr in pls_integer,
-111  		    p_log_msg_id in varchar,
-112  		    p_short_message in varchar,
-113  		    p_log_level in pls_integer,
-114  		    p_caller_name in varchar,
-115  		    p_line_number in pls_integer,
-116  		    p_long_message in varchar
-117  	   )
-118  	is
-119  	    pragma autonomous_transaction ;
-120  	begin
-121  
-122  	   if p_log_level = g_snap OR p_log_level <= g_job_log.msg_lvl then
-123  	       insert into job_msg (
-124  		    job_msg_id,    job_log_id,
-125  		   -- log_seq_nbr,
-126  		    log_msg_id,
-127  		    log_msg,	   log_level,	      log_msg_ts,	   caller_name,
-128  		    line_nbr,	   log_msg_clob
-129  	       )
-130  	       values(
-131  		    p_log_msg_id,    p_job_log_id,
-132  		    -- g_next_log_seq_nbr,
-133  		    p_log_msg_id,
-134  		    p_short_message, p_log_level,     current_timestamp,   p_caller_name,
-135  		    p_line_number,   p_long_message
-136  	      );
-137  	   end if;
-138  	end;
-139  
-140  	 --%# job_log
-141  
-142  	 procedure job_log_insert(rec in job_log%rowtype) is
-143  	 begin
-144  	    insert into job_log (
-145  	       job_log_id,     process_name,	thread_name,
-146  	       status_msg,     status_ts,	tracefile_name,
-147  	       classname,      schema_name,	module_name,
-148  	       job_token,      logfile_name
-149  	  ) values (
-150  	       rec.job_log_id,	rec.process_name,   rec.thread_name,
-151  	       rec.status_msg,	current_timestamp,  rec.tracefile_name,
-152  	       rec.classname,	rec.schema_name,  rec.module_name,
-153  	       rec.job_token,	rec.logfile_name
-154  	);
-155  
-156  	 end;
-157  
-158  	function job_step_insert (
-159  	     p_step_name   in varchar,
-160  	     p_step_info   in varchar default null,
-161  	     p_classname   in varchar default null,
-162  	     p_stacktrace  in varchar default null
-163  	) return number
-164  	is
-165  	   my_job_step_id number;
-166  	begin
-167  	   insert into job_step (
-168  	     job_step_id,   job_log_id, step_name, step_info,
-169  	     classname,     start_ts,	stacktrace
-170  	   ) values (
-171  	     job_step_id_seq.nextval, g_job_log.job_log_id, p_step_name, p_step_info,
-172  	     p_classname,   current_timestamp,	 p_stacktrace
-173  	   ) returning job_step_id into my_job_step_id;
-174  	   return my_job_step_id;
-175  	end job_step_insert;
-176  
-177  	procedure job_step_finish (step_id in number) is
-178  	 begin
-179  	    update job_step
-180  	    set end_ts = systimestamp
-181  	    where job_step_id = step_id;
-182  	 end job_step_finish;
-183  
-184  	procedure begin_log (
-185  	     logfile_name   in varchar,
-186  	     logfile_directory in varchar default 'JOB_MSG_DIR',
-187  	     p_process_name in varchar default null,
-188  	     p_log_set	    in varchar default null,
-189  	     p_classname    in varchar default null,
-190  	     p_module_name  in varchar default null,
-191  	     p_status_msg   in varchar default null,
-192  	     p_thread_name  in varchar default null,
-193  	     p_log_level    in pls_integer default G_INFO,
-194  	     p_trace_level  in pls_integer default G_INFO)
-195  	 --%>
-196  	 is
-197  	     my_tracefile_name varchar(256);
-198  	     my_job_token varchar(64) := get_job_token;
-199  
-200  	 begin
-201  	     dbms_output.put_line('begin_log() logfile_name "' || logfile_name || '"');
-202  	     g_job_log.logfile_name := logfile_name;
-203  	     g_job_log.directory_name := logfile_directory;
-204  	     --g_job_log.job_log_id   := job_log_id_seq.nextval;
-205  	     g_job_log.process_name := p_process_name;
-206  	     g_job_log.classname    := p_classname;
-207  	     g_job_log.module_name  := p_module_name;
-208  	     g_job_log.status_msg   := p_status_msg;
-209  	     g_job_log.thread_name  := p_thread_name;
-210  	     g_job_log.job_token    := my_job_token;
-211  	     g_job_log.logfile_name := logfile_name;
-212  	     g_job_log.trace_level  := p_trace_level;
-213  	     g_job_log.start_ts     := current_timestamp;
-214  	     g_job_log.log_level    := p_log_level;
-215  
-216  	     set_trace(p_trace_level);
-217  
-218  	     my_tracefile_name := set_tracefile_identifier(g_job_log.job_log_id);
-219  	     set_action('begin_job ' || to_char(g_job_log.job_log_id));
-220  
-221  
-222  	 end begin_log;
-223  
-224  	 --%~~~<
-225  	FUNCTION begin_job (
-226  	     p_process_name in varchar,
-227  	     p_log_set	    in varchar default null,
-228  	     p_classname    in varchar default null,
-229  	     p_module_name  in varchar default null,
-230  	     p_status_msg   in varchar default null,
-231  	     p_thread_name  in varchar default null,
-232  	     logfile_name   in varchar default null,
-233  	     logfile_directory in varchar default 'JOB_MSG_DIR',
-234  	     p_log_level    in pls_integer default G_INFO,
-235  	     p_trace_level  in pls_integer default G_INFO)
-236  	     return varchar
-237  	 --%>
-238  	 is
-239  	     my_tracefile_name varchar(256);
-240  	     my_job_token varchar(64) := get_job_token;
-241  	     my_logfile_name varchar(64);
-242  	 begin
-243  	     dbms_output.put_line('begin_job logfile_name "' || logfile_name);
-244  
-245  	     g_job_log.job_log_id := job_log_id_seq.nextval;
-246  
-247  	     if logfile_name is not null then
-248  		 my_logfile_name := logfile_name;
-249  	     else
-250  		 my_logfile_name := my_job_token || '-' || g_job_log.job_log_id  ||
-251  				    '.log';
-252  	     end if;
-253  
-254  	     begin_log (
-255  		 logfile_name	=> my_logfile_name,
-256  		 logfile_directory => logfile_directory,
-257  		 p_process_name => p_process_name,
-258  		 p_log_set	=> p_log_set,
-259  		 p_classname	=> p_classname,
-260  		 p_module_name	=> p_module_name,
-261  		 p_status_msg	=> p_status_msg,
-262  		 p_thread_name	=> p_thread_name,
-263  		 p_log_level	=> p_log_level,
-264  		 p_trace_level	=> p_trace_level
-265  	     );
-266  
-267  	     set_action('begin_job ' || to_char(g_job_log.job_log_id));
-268  	     job_log_insert ( g_job_log);
-269  
-270  	     return my_job_token;
-271  	      end begin_job;
-272  
-273  
-274  
-275  	procedure end_job
-276  	--::* update job_log.status_id to 'C' and status_msg to 'DONE'
-277  	--::>
-278  	is
-279  	    PRAGMA AUTONOMOUS_TRANSACTION;
-280  --       elapsed_tm   INTERVAL DAY TO SECOND;
-281  	begin
-282  	    set_action('end_job');
-283   --      g_process_end_tm := current_timestamp;
-284   --     elapsed_tm := g_process_end_tm - g_process_start_tm;
-285  
-286  	    update job_log
-287  	    set
-288  		   SID = NULL,
-289  		   status_msg = 'DONE',
-290  		   status_ts = SYSDATE
-291  	     where job_log_id = g_job_log.job_log_id;
-292  
-293  	   commit;
-294  	   set_action('end_job complete');
-295  	end end_job;
-296  
-297  	 procedure abort_job(exception_msg in varchar default null,
-298  		     stacktrace in varchar default null)
-299  	 --::* procedure abort_job
-300  	 --::* update job_log
-301  	 --::* elapsed_time
-302  	 --::* status_id = 'I'
-303  	 --::* status_msg = 'ABORT'
-304  	 --::>
-305  	 is
-306  	    PRAGMA AUTONOMOUS_TRANSACTION;
-307  	    -- elapsed_tm   INTERVAL DAY TO SECOND;
-308  	    stack   varchar (32767);
-309  	 begin
-310  	     set_action('abort_job');
-311  	     -- g_process_end_tm := current_timestamp;
-312  	     -- elapsed_tm := g_process_end_tm - g_process_start_tm;
-313  
-314  	     if stacktrace is not null then
-315  		 stack := stacktrace;
-316  	     else
-317  		 stack := DBMS_UTILITY.format_call_stack ();
-318  	     end if;
-319  
-320  	     update job_log
-321  	     set  SID = NULL,
-322  		  status_msg = 'ABORT',
-323  		  status_ts = SYSDATE,
-324  		  abort_stacktrace = stack
-325  	     where job_log_id = g_job_log.job_log_id;
-326  
-327  	     COMMIT;
-328  	     set_action('abort_job complete');
-329  	 end abort_job;
-330  
-331  	 procedure set_debug(debug boolean default true)
-332  	 is
-333  	 begin
-334  	     g_debug := debug;
-335  	 end;
-336  
-337  
-338  	 procedure set_action ( p_action in varchar ) is
-339  	 begin
-340  		 dbms_application_info.set_action(substr(p_action, 1, 64)) ;
-341  	 end set_action ;
-342  
-343  	 procedure set_module ( p_module_name in varchar, p_action_name in varchar )
-344  	 is
-345  	 begin
-346  		 dbms_application_info.set_module(p_module_name, p_action_name) ;
-347  	 end set_module ;
-348  
-349  	function open_log_file (
-350  	     directory_name in varchar,
-351  	     p_file_name in varchar,
-352  	     p_headers in boolean default true)
-353  	return utl_file.file_type
-354  	--
-355  	--% opens a log file with the specified file name in the directory g_job_msg_dir
-356  	is
-357  	   my_directory_path varchar2(4000);
-358  	   my_handle utl_file.file_type;
-359  	begin
-360  	   if (g_debug) then
-361  	       dbms_output.put_line('open_log_file() dir: "' || directory_name ||
-362  				'" file: "' || p_file_name || '"');
-363  	   end if;
-364  	   my_handle := utl_file.fopen(directory_name,p_file_name,'a');
-365  	   return my_handle;
-366  	end open_log_file;
-367  
-368  	function get_directory_path return varchar is
-369  	    -- todo see if grants are wrong, permission must be granted to the user
-370  	    cursor directory_cur is
-371  	    select  owner, directory_name, directory_path
-372  	    from    all_directories
-373  	    where   directory_name = g_job_msg_dir;
-374  
-375  	    directory_rec directory_cur%rowtype;
-376  
-377  	 begin
-378  	     open directory_cur;
-379  	     fetch directory_cur into directory_rec;
-380  	     dbms_output.put_line('owner: '	      || directory_rec.owner ||
-381  				' directory_name: ' || directory_rec.directory_name ||
-382  				' directory_path: ' || directory_rec.directory_path);
-383  	    close directory_cur;
-384  
-385  	    return directory_rec.directory_path;
-386  	 end get_directory_path;
-387    --::<
-388  	   function basename (p_full_path in varchar,
-389  			  p_suffix    in varchar default null,
-390  			  p_separator in char default '/')
-391  	   return varchar
-392  	   --:: like bash basename or gnu basename, returns the filename of a path optionally
-393  	   --:: stripping the specified file extension
-394  	   --::>
-395  	 is
-396  	    my_basename varchar(256);
-397  	 begin
-398  	     dbms_output.put_line('basename ' || p_full_path);
-399  	     my_basename := substr(p_full_path, instr(p_full_path,p_separator,-1)+1);
-400  	     dbms_output.put_line('my_basename' || my_basename);
-401  	     if p_suffix is not null then
-402  		 my_basename := substr(my_basename, 1, instr(my_basename, p_suffix, -1)-1);
-403  	     end if;
-404  
-405  	    return my_basename;
-406  	 end basename;
-407  
-408  	 function get_my_tracefile return clob is
-409  	 begin
-410  	     return get_tracefile(basename(get_my_tracefile_name));
-411  	 end get_my_tracefile;
-412  
-413  	 function get_tracefile(p_file_name in varchar)
-414  	 return clob is
-415  	     my_clob	     clob;
-416  	     my_bfile	     bfile;
-417  	     my_dest_offset  integer := 1;
-418  	     my_src_offset   integer := 1;
-419  	     my_lang_context integer := dbms_lob.default_lang_ctx;
-420  	     my_warning      integer;
-421  	 begin
-422  	     my_bfile := bfilename('UDUMP_DIR', p_file_name);
-423  
-424  	     dbms_lob.CreateTemporary(my_clob, FALSE, dbms_lob.CALL);
-425  	     dbms_lob.FileOpen(my_bfile);
-426  	     dbms_output.put_line('get_tracefile: before LoadClobFromFile');
-427  
-428  	     dbms_lob.LoadClobFromFile (
-429  		 dest_lob     => my_clob,
-430  		 src_bfile    => my_bfile,
-431  		 amount       => dbms_lob.lobmaxsize,
-432  		 dest_offset  => my_dest_offset,
-433  		 src_offset   => my_src_offset,
-434  		 bfile_csid   => dbms_lob.default_csid,
-435  		 lang_context => my_lang_context,
-436  		 warning      => my_warning
-437  	     );
-438  	     dbms_output.put_line('get_tracefile warning: ' || my_warning);
-439  	     dbms_lob.FileClose(my_bfile);
-440  
-441  	     return my_clob;
-442  	 end get_tracefile;
-443  
-444  	 procedure trace_step(p_step_name in varchar, p_job_step_id in number) is
-445  	    job_step_id varchar(9) := to_char(p_job_step_id);
-446  	    sql_text varchar(255) := 'select ''step_name: ''''' || p_step_name ||
-447  		    ''''' job_log_id: ' || g_job_log.job_log_id ||
-448  		   ' job_step_id: ' || p_job_step_id || ''' from dual';
-449  	 begin
-450  	    execute immediate sql_text;
-451  	 end;
-452  
-453  	 procedure set_log_level (p_level in pls_integer) is
-454  	 begin
-455  	     if    p_level < 1 then g_job_log.log_level := 1;
-456  	     elsif p_level > 9 then g_job_log.log_level := 9;
-457  	     else  g_job_log.log_level := p_level;
-458  	     end if;
-459  	 end set_log_level;
-460  
-461  
-462  	 PROCEDURE prepare_connection is
-463  	     context_info DBMS_SESSION.AppCtxTabTyp;
-464  	     info_count   PLS_INTEGER;
-465  	     indx	  PLS_INTEGER;
-466  	 BEGIN
-467  	     DBMS_SESSION.LIST_CONTEXT ( context_info, info_count);
-468  	     indx := context_info.FIRST;
-469  	     LOOP
-470  		EXIT WHEN indx IS NULL;
-471  		DBMS_SESSION.CLEAR_CONTEXT(
-472  		    context_info(indx).namespace,
-473  		    context_info(indx).attribute,
-474  		   null
-475  		 );
-476  		indx := context_info.NEXT (indx);
-477  	    END LOOP;
-478  	    DBMS_SESSION.RESET_PACKAGE;
-479  	 END prepare_connection;
-480  
-481  	 procedure logger_dtls_to_str is
-482  	     ndx varchar(64);
-483  	     dtl logger_dtl%rowtype;
-484  	     retval long := '';
-485  	 begin
-486  	     --  dbms_output.put_line('logger_dtls_to_str');
-487  	    -- dbms_output.put_line('about to get first');
-488  	    -- ndx := logger_dtls.first();
-489  	     -- dbms_output.put_line('ndx "' || ndx || '"');
-490  
-491  	     while ndx is not null loop
-492  		 dtl :=  logger_dtls(ndx);
-493  		 retval := retval || dtl.logger_nm  || ' ' || dtl.log_lvl || '\n';
-494  		 ndx := logger_dtls.next(ndx);
-495  	     end loop;
-496  	     /*
-497  	     if (g_debug ) then
-498  		 dbms_output.put_line('>> ' || retval);
-499  	     end if;
-500  	     */
-501  	    -- dbms_output.put_line('end logger_dtls_to_str');
-502  	 end logger_dtls_to_str;
-503  
-504   function get_log_level (p_logger_name in varchar)
-505  	 return number
-506  	 is
-507  	     my_logger_name varchar(64) := upper(p_logger_name);
-508  	     my_log_dtl logger_dtl%rowtype;
-509  	     retval number;
-510  	     was_not varchar(9) := ' was ';
-511  	 begin
-512  	      logger_dtls_to_str;
-513  	      if (g_debug) then dbms_output.put_line('get_log_level() my_logger_name: "' || my_logger_name || '"'); end if;
-514  	      begin
-515  		  my_log_dtl  := logger_dtls(my_logger_name);
-516  		  if (g_debug) then dbms_output.put_line('get_log_level() my_dtl_log: "' || my_logger_name || '"'); end if;
-517  		  retval := my_log_dtl.log_lvl;
-518  	      exception
-519  		 when no_data_found then
-520  		   if g_job_log.log_level is null then
-521  		       retval := g_info;
-522  		   else
-523  		       retval := g_job_log.log_level;
-524  		   end if;
-525  		   was_not := 'was not';
-526  	      end;
-527  
-528  	     if (g_debug) then
-529  		 dbms_output.put_line('get_log_level() ' ||
-530  		     ' logger: "'  || p_logger_name || '" ' ||
-531  		     was_not || ' found '  ||
-532  		     ' level: '   || to_char(my_log_dtl.log_lvl) ||
-533  		     ' retval: ' || to_char(retval));
-534  	     end if;
-535  	     return retval;
-536  
-537  	 end get_log_level;
-538  
-539    --
-540    --  Logger hdr and dtl
-541    --
-542  
-543  	 procedure create_set (p_set_nm    in varchar,
-544  			     p_default_level	 in number)
-545  	 is
-546  	 begin
-547  	     insert into logger_hdr (logger_hdr_id, logger_set_nm, default_lvl)
-548  	     values (logger_hdr_id_seq.nextval, upper(p_set_nm), p_default_level);
-549  	  end create_set;
-550  
-551  	 procedure set_caller_level(name in varchar ,  level in pls_integer)
-552  	 is
-553  	     dtl  logger_dtl%rowtype;
-554  	 begin
-555  		 dtl.logger_nm := upper(name);
-556  		 dtl.log_lvl := level;
-557  		 logger_dtls(dtl.logger_nm) := dtl;
-558  	 end;
-559  
-560  	 procedure define_logger_level(p_set_nm    in varchar,
-561  			     p_logger_nm in varchar,
-562  			     p_level	 in number)
-563  	 is
-564  	     logger_rec logger_hdr%rowtype;
-565  	 begin
-566  
-567  		  insert into logger_dtl (logger_dtl_id, logger_hdr_id,
-568  			  logger_nm, log_lvl)
-569  		  select logger_dtl_id_seq.nextval,
-570  			 logger_hdr.logger_hdr_id,
-571  			 upper(p_logger_nm), p_level
-572  		  from	 logger_hdr
-573  		  where
-574  			logger_set_nm = upper(p_set_nm);
-575  
-576  		  exception when dup_val_on_index
-577  		  then
-578  		      update logger_dtl
-579  		      set  log_lvl =  p_level
-580  		      where logger_hdr_id =  (
-581  			      select logger_hdr_id
-582  			      from   logger_hdr
-583  			      where logger_set_nm = upper(p_set_nm)
-584  			     )
-585  			      and logger_nm = upper(p_logger_nm);
-586  
-587  
-588  
-589  	 end define_logger_level;
-590  
-591  
-592  /*
-593  	procedure log2(message in varchar,
-594  		       level   in pls_integer default g_info)
-595  	is
-596  	   owner       varchar(64);
-597  	   name        varchar(64);
-598  	   line        number;
-599  	   caller_type varchar(64);
-600  	begin
-601  	    OWA_UTIL.who_called_me (owner,name,line,caller_type);
-602  	    --dbms_output.put_line('name: ' || name || ' line: ' || line);
-603  	end log2;
-604   */
-605  
-606    procedure log (
-607  	   p_log_msg	  in   varchar,
-608  	   p_log_level	  in   pls_integer default g_info,
-609  	   p_dump_stack   in   boolean default false
-610  	)
-611  	is
-612  	   my_message	varchar2 (32767);
-613  	   owner       varchar(64);
-614  	   name        varchar(64);
-615  	   line        number;
-616  	   caller_type varchar(64);
-617  	   my_logger_level number;
-618  	   my_file_handle utl_file.file_type;
-619  	   skip varchar(6) := ' skip ';
-620  	begin
-621  	       OWA_UTIL.who_called_me (owner,name,line,caller_type);
-622  	       if name is null then
-623  		   name := 'anonymous';
-624  	       end if;
-625  	       my_logger_level := get_log_level(name);
-626  
-627  	   if (g_debug) and p_log_level > my_logger_level then
-628  		 skip := '	';
-629  		 dbms_output.put_line(
-630  		   'log() ' ||	skip ||
-631  		   'caller: ' || name ||
-632  		   ' line: ' || line ||
-633  		   ' my_logger_level: ' || to_char(my_logger_level) ||
-634  		    ' p_log_level: '	 || to_char(p_log_level));
-635  	   end if;
-636  
-637  	   if p_log_level <= my_logger_level then
-638  	       if g_job_log.logfile_name is not null then
-639  	       -- write to file
-640  		   my_message := logger_message_formatter  (
-641  		       job_log_id   => g_job_log.job_log_id,
-642  		       job_msg_id   => null,
-643  		       log_msg	    => p_log_msg,
-644  		       log_level    => p_log_level,
-645  		       caller_name  => name,
-646  		       line_number  => line,
-647  		       separator    => ',',
-648  		       call_stack   => null
-649  		   );
-650  		   my_file_handle := open_log_file (g_job_log.directory_name,g_job_log.logfile_name);
-651  		   UTL_FILE.put_line (my_file_handle, my_message);
-652  		   utl_file.fclose(my_file_handle);
-653  	       else
-654  		   my_message := logger_message_formatter  (
-655  		       job_log_id   => g_job_log.job_log_id,
-656  		       job_msg_id   => null,
-657  		       log_msg	    => p_log_msg,
-658  		       log_level    => p_log_level,
-659  		       caller_name  => name,
-660  		       line_number  => line,
-661  		       separator    => ' ',
-662  		       call_stack   => null
-663  		   );
-664  		   dbms_output.put_line (my_message);
-665  	       end if;
-666  	       --
-667  	       if (g_debug) then
-668  		  dbms_output.put_line('log(): ' || my_message);
-669  	       end if;
-670  	   end if;
-671  	end log;
-672  
-673  
-674  begin
-675  	dbms_output.ENABLE(1000000) ;
-676    -- set_context;
-677  end logger;
-678  /
-
-Package body created.
-
-SQL> 
-SQL> /*
-SQL> begin
-SQL> 	   sys.DBMS_MONITOR.session_trace_enable(waits=>TRUE, binds=>FALSE);
-SQL> end;
-SQL> /
-SQL> */
-SQL> --#<
-SQL> show errors
-No errors.
-SQL> --#>
-SQL> 
-SQL> --@ cursor_tables.sr.sql
-SQL> exit
+SQL> spool logger.pkb.sr.lst

@@ -1,53 +1,29 @@
 --%```
 set serveroutput on
 set echo on
-set timing on
 spool example_log_suite.lst
 --%```
 
 --%# Logging example
 
---%## example_04
---%```
-create or replace 
-procedure example_04
-is
-    token varchar(32);
-begin
-    logger.log('severe 1',1);
-    logger.log('warning 2',2);
-    logger.log('undefined 3',3);
-    logger.log('info 4',4);
-    logger.log('verbose 6',6);
-    logger.log('debug 7',7);
-    logger.log('trace 8',8);
-end;
---%```
-/
 
 --%## example_05
 --%```
 create or replace 
-procedure example_05(loop_count in number default 1)
+procedure example_06
 is
 begin
-    for i in 1 .. loop_count
+    for i in 1 .. 10000
     loop
         for lvl in 1 .. 9
         loop
-       	    logger.log('lvl is ' || lvl,lvl);
+    	    logger.log('lvl is ' || lvl,lvl);
         end loop;
     end loop;
 end;
 --%```
 /
-show errors
---%```
-begin
-  logger.set_debug;
-  logger.log('no logfile specified');
-end;
---%```
+
 /
 
 --%## Example usage
@@ -68,10 +44,10 @@ declare
     token varchar(32);
     logname varchar(32) := to_char(job_log_id_seq.nextval) || '.log';
 begin
+   logger.set_debug;
    logger.begin_log(logfile_name => logname, log_level => 3);
-   logger.set_caller_level('example_05',8);
-   example_04;
-   example_05;
+   logger.set_caller_level('example_06',4);
+   example_06;
 end;
 --%```
 /
@@ -88,30 +64,3 @@ end;
 --%2,"2020-05-15T18:23:57.455170000","lvl is 2","EXAMPLE_05",7,,,""
 --%3,"2020-05-15T18:23:57.456750000","lvl is 3","EXAMPLE_05",7,,,""
 --%```
-declare
-    logname varchar(32) := to_char(job_log_id_seq.nextval) || '.log';
-begin
-   --logger.prepare_connection;
-   logger.set_debug(false);
-   dbms_output.put_line('wtf');
-
-   logger.begin_log(logfile_name => logname, log_level => 3);
-   logger.set_caller_level('example_05',8);
-   example_05(1000);
-end;
---%```
-/
-declare
-    logname varchar(32) := to_char(job_log_id_seq.nextval) || '.log';
-begin
-   --logger.prepare_connection;
-   logger.set_debug(false);
-   dbms_output.put_line('wtf');
-
-   logger.begin_log(logfile_name => logname, log_level => 3);
-   logger.set_caller_level('example_05',2);
-   example_05(1000);
-end;
---%```
-/
-

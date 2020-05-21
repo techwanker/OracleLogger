@@ -63,13 +63,13 @@ end;
 --%# Example usage
 --%
 --%
---%* begin_log (logfile_name, p_log_level)
+--%* begin_log (logfile_name, log_level)
 --%
 --%  A logfile will be created in the *job_msg_dir* directory and
 --%  unless other filters are applied messages of level 3 and lower
 --%  will be written
 --%
---%* set_caller_level(unit_name,level)
+--%* set_caller_level(unit_name,log_level)
 --%  
 --%  All messages for procedure *example_05* of with a level of 8
 --%  or less will be written  
@@ -80,14 +80,10 @@ declare
     my_job_step_id number;
 begin
    logger.set_debug;
-   token := logger.begin_job(p_process_name => 'example_job');
+   token := logger.begin_job(process_name => 'example_job');
    logger.set_caller_level('example_05',8);
-   --my_job_step_id := logger.job_step_insert('example_01','no parms');
-   --example_01;
-   --logger.job_step_finish(my_job_step_id);
-   
-   my_job_step_id := logger.job_step_insert(p_step_name => 'example_04',
-                        p_step_info => 'no parms');
+   my_job_step_id := logger.job_step_insert(step_name => 'example_04',
+                        step_info => 'no parms');
    example_04;
    logger.job_step_finish(my_job_step_id);
 

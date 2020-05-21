@@ -1,0 +1,123 @@
+<h1 id="logger-for-plsql">Logger for PL/SQL</h1>
+<h2 id="user-documentation">User documentation</h2>
+<p>Additional documentation may be found under:</p>
+<ul>
+<li>docs/sphinx/_build/html/index.html</li>
+<li>docs/sphinx/_build/singlehtml/index.html</li>
+<li>docs/sphinx/_build/latex/loggerforplsql.pdf</li>
+</ul>
+<h2 id="overview">Overview</h2>
+<p>The <strong>logger</strong> package provides an easy way to write log messages via <em>dbms_output</em> or to a file on the database server via <em>utl_file</em>.</p>
+<p>Messages are assigned a <em>log_level</em> and filtering out messages by level and package/function/procedure.</p>
+<h2 id="log-to-dbms_output">Log to dbms_output</h2>
+<p>The call</p>
+<pre><code>   logger.log(&#39;message&#39;)</code></pre>
+<pre><code>SQL&gt; set serveroutput on
+SQL&gt; begin
+  2     logger.log(&#39;a message&#39;);
+  3  end;
+  4  /</code></pre>
+<p>results in the following output:</p>
+<pre><code>4 &quot;2020-05-17T12:15:20.027262000&quot; &quot;a message&quot; &quot;anonymous&quot; 2   &quot;&quot;                </code></pre>
+<p>The fields (space delimited, quoted strings) are:</p>
+<ul>
+<li>Log level</li>
+<li>timestamp</li>
+<li>package/function/procedure name from which invoked</li>
+<li>line number of package/function/procedure</li>
+<li>job_log_id (If job tracking, see TODO)</li>
+<li>job_mst_id (If job tracking, see TODO)</li>
+<li>call stack</li>
+</ul>
+<h2 id="log-to-file">Log to file</h2>
+<p>The call</p>
+<pre><code>  logger.begin_log(logfile_directory =&gt; &#39;TMP_DIR&#39;, logfile_name =&gt; &#39;02_log_to_file.log&#39;);</code></pre>
+<p>Will cause subsequent log messages to be written to the filesystem of the database server.</p>
+<p>In order for this to work a database directory must be defined e.g.</p>
+<pre><code>    create directory tmp_dir as &#39;&amp;&amp;tmp_directory&#39;;
+    grant read, write on directory tmp_dir to &amp;username;</code></pre>
+<p>cat /tmp/02_log_to_file.log</p>
+<p>A comma separated values <em>CSV</em> file is written to in append mode; if the file already exists, new records are written to the end.</p>
+<p>If multiple processes are writing to the same file it is best to use <strong>start_job</strong>, which will write a job identifier to the file.</p>
+<pre><code>4,&quot;2020-05-17T12:31:40.092661000&quot;,&quot;a message&quot;,&quot;anonymous&quot;,3,,,&quot;&quot;</code></pre>
+<h2 id="filtering">Filtering</h2>
+<p>Each log entry has a log_level</p>
+<pre><code>* SEVERE       CONSTANT PLS_INTEGER := 1 ;
+* WARNING      CONSTANT PLS_INTEGER := 2 ;
+* INFO         CONSTANT PLS_INTEGER := 4 ;
+* VERBOSE      CONSTANT PLS_INTEGER := 5 ;
+* VERY_VERBOSE CONSTANT PLS_INTEGER := 6 ;
+* DEBUG        CONSTANT PLS_INTEGER := 7 ;
+* TRACE        CONSTANT PLS_INTEGER := 9 ; 
+* NONE         CONSTANT PLS_INTEGER := 10 ;</code></pre>
+<p>The default logging level is 4.</p>
+<p>The default filter level is 4.</p>
+<p>The process level default can be changed with the begin_log with the <em>log_level</em> parameter:</p>
+<pre><code>    begin_log(logfile_directory =&gt; &#39;tmp_dir&#39;,logfile_name=&gt;&#39;debug.log&#39;,
+       log_level=&gt;2);</code></pre>
+<p>In which case only messages with log_level of 2 or less will be logged.</p>
+<p>But if it is desired to see more messages from a partilar package, the filter level may changed:</p>
+<h1 id="job-logging">Job Logging</h1>
+<p>Record jobs and their steps, how long each step took to execute and optionally extremely detailed information about every database operation as an oracle trace file may be parsed and stored in the log repository.</p>
+<p>The log repository may be on the same oracle database server, even the same schema using the same connection as it uses autonomous transactions, or in postgresql or h2.</p>
+<h1 id="analyzing-the-logs">Analyzing the logs</h1>
+<p>Separate utilities are used to analyzed the logs. A very useful tool is javautil-condition-identification.</p>
+<p>Did any job abort?</p>
+<p>What is the trend on elapsed times?</p>
+<p>How do elapsed times vary based on time of day?</p>
+<p>Getting deeper, with trace information one can drill down to the details, we will cover that later.</p>
+<h1 id="installation-of-database-artifacts-for-oracle">Installation of database artifacts for oracle</h1>
+<p>These files may be found under <em>ddl</em></p>
+<h2 id="grant-permissions-to-user">Grant permissions to user</h2>
+<ol style="list-style-type: decimal">
+<li>Edit defines.sql</li>
+</ol>
+<p>It should be self explanatory</p>
+<ul>
+<li>sqlplus sys as sysdba@servicename @ create_user</li>
+</ul>
+<h2 id="create-the-tables-and-package">Create the tables and package</h2>
+<p>sqlplus user/passwor@servicename @ INSTALL</p>
+<p>The script that runs them all is <em>INSTALL.sql</em></p>
+<h2 id="prepare_connnection">prepare_connnection</h2>
+<p>prepare-connection provides one procedure.<br />This will call dbms_session.clear_context for each context variable, restoring the context for a connection returned from a connection_pool to the state the of an initially opened connection.</p>
+<p>Connection pools do not generally clear this information out as it is Oracle specific.</p>
+<h2 id="my_session_info.sql">my_session_info.sql</h2>
+<p>creates the view <em>my_session_info</em> to allow the connected user to obtain the v$session record for the current connection.</p>
+<h2 id="logger_message_formatter">logger_message_formatter</h2>
+<p>Provides the <em>logger_message_formatter</em> function, which creates a single string from all of the logging parameters and makes a call to dbms_output.put_line and then returns the formatted message.</p>
+<h1 id="database-objects">Database Objects</h1>
+<h2 id="job-log-tables">Job log tables</h2>
+<ol style="list-style-type: decimal">
+<li>job_log</li>
+<li>job_msg</li>
+<li>job step</li>
+</ol>
+<p>The granularity of job step is left to the invoker.<br />As the overhead is very low, there is no reason to be parsimonious with identification, it's a simple one line call in the user app.</p>
+<p>These records can be reviewed for job success or failure and form a historical basis of time elapsed.</p>
+<p>This may be used as a starting pointing in locating &quot;what processes are using the time?&quot;</p>
+<p>Additionally they constitute a base performance metric from which runtime degradation or periodic anomalous runs may be identified.</p>
+<p>Data is committed by calls from java to the package logger, provided here.</p>
+<p>The package creates autonomous commits and hence may be safely called using the same connection as the application.</p>
+<h2 id="logger-package">logger package</h2>
+<h3 id="change-vsession-information">change v$session information</h3>
+<p>procedure prepare_connection;</p>
+<p>set_module set action</p>
+<h2 id="trace-repository">Trace Repository</h2>
+<h1 id="tools-and-concepts">Tools and concepts</h1>
+<p>User should be familiar with v$ssession view, tkprof command line utility</p>
+<h1 id="connection-pools">Connection Pools</h1>
+<h2 id="after-getting-a-connection">After Getting a connection</h2>
+<h3 id="contexts">Contexts</h3>
+<p>If a session is being used as part of a connection pool and the state of its contexts are not reinitialized, this can lead to unexpected behavior.</p>
+<h3 id="packages">Packages</h3>
+<p>Sessions have the ability to alter package state by amending the values of package variables. If a session is being used as part of a connection pool and the state of its packages are not reinitialized, this can lead to unexpected behavior. To solve this, Oracle provides the dbms_session.reset_package procedure.</p>
+<p>The dbloggging provided procedure clears all context variables and resets package state.</p>
+<p>Connections must be reset immediately after being obtained from a connection pool</p>
+<p>In src/main/resources/ddl/oracle/prepare_connection</p>
+<p>create public synonym prepare_connection for prepare_connection; grant execute on prepare_connection to public; ```</p>
+<h3 id="zaxxer">Zaxxer</h3>
+<p>TODO how to call this procedure in the connection pool</p>
+<h2 id="dbms_session">## DBMS_SESSION</h2>
+<h2 id="identifier">Identifier</h2>
+<p>SET_IDENTIFIER and CLEAR_IDENTIFIER procedures to allow the real user to be associated with a session, regardless of what database user was being used for the connection.</p>

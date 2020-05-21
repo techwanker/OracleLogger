@@ -1,4 +1,4 @@
-    define username=            'logger'
+    define username=            'sr'
     define password=            'tutorial'
     define tmp_directory=   '/tmp'
     define udump_directory=     '/opt/oracle/diag/rdbms/orclcdb/ORCLCDB/trace'
