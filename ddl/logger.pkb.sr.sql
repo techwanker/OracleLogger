@@ -2,6 +2,7 @@
 set echo on 
 spool logger.pkb.sr.lst
 --#>
+--/<
 CREATE OR REPLACE PACKAGE BODY logger
 is
   g_debug                 boolean := false;
@@ -705,18 +706,11 @@ is
   end log;
 
 
-begin
-   dbms_output.ENABLE(1000000) ;
-  -- set_context;
+begin dbms_output.ENABLE(1000000) ; -- set_context;
 end logger;
-/
+--/>
 
-/*
-begin
-      sys.DBMS_MONITOR.session_trace_enable(waits=>TRUE, binds=>FALSE);
-end;
-/
-*/
 --#<
+/
 show errors
 --#>

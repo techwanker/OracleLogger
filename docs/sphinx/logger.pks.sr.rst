@@ -130,8 +130,6 @@ Abort job
         procedure abort_job(exception_msg in varchar default null,
             stacktrace in varchar default null);
 
-TODO
-====
 
 ::
 

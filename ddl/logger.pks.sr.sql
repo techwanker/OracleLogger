@@ -1,6 +1,8 @@
---%# Logger package
+--#< 
 set echo on
+--#>
 
+--/<
 --%```
 create or replace PACKAGE logger AS
     G_SEVERE       CONSTANT PLS_INTEGER := 1 ;
@@ -175,7 +177,10 @@ create or replace PACKAGE logger AS
 --%```
     procedure set_debug(debug boolean default true) ;
 --%```
-
 END logger;
+--/>
+
+--#< 
 /
 show errors
+--#> 

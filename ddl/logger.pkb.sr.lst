@@ -721,4 +721,6 @@ SQL> --#<
 SQL> show errors
 No errors.
 SQL> --#>
+SQL> 
+SQL> --@ cursor_tables.sr.sql
 SQL> exit

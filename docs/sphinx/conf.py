@@ -20,7 +20,7 @@
 project = 'Logger for PL/SQL'
 copyright = '2020, Jim Schmidt'
 author = 'Jim Schmidt'
-
+html_show_sphinx=False
 # The full version, including alpha/beta/rc tags
 release = '1.0'
 
